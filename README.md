@@ -21,13 +21,15 @@ npm install express dotenv express-rate-limit puppeteer-extra puppeteer-extra-pl
 npm install --save-dev nodemon
 
 
+npm install -g pm2
+pm2 start ecosystem.config.js
 
-Invoke-WebRequest -Uri http://localhost:4000/api/scrape-images `
+```
+
+#### powershell测试
+```
+Invoke-WebRequest -Uri http://localhost:3000/api/scrape-images `
   -Method POST `
   -Headers @{ "Content-Type" = "application/json" } `
   -Body '{"url":"https://baijiahao.baidu.com/s?id=1829346076071945435"}'
-
-
-
-npm install -g pm2
-pm2 start ecosystem.config.js
+```
