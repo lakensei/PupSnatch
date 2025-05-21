@@ -14,6 +14,13 @@
 ```bash
 npm install -g pm2
 pm2 start ecosystem.config.js
+
+
+# 改为ts后无法启动
+# 1. 编译 TS → JS
+npx tsc
+# 2. 运行编译后的 JS
+pm2 start dist/src/app.js
 ```
 
 #### powershell测试

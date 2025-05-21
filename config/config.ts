@@ -12,7 +12,7 @@ export interface Config {
 }
 
 const config: Config = {
-  port: process.env.PORT ? parseInt(process.env.PORT) : 3000,
+  port: process.env.PORT ? parseInt(process.env.PORT) : 4000,
   env: process.env.NODE_ENV || 'development',
   puppeteer: {
     timeout: 30000, // 30 seconds

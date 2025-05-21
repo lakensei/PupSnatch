@@ -12,7 +12,10 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "declaration": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "removeComments": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
   },
   "include": ["src/**/*", "config/**/*"],
   "exclude": ["node_modules", "dist"]
