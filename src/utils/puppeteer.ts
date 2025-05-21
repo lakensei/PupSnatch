@@ -5,6 +5,22 @@ import config from '../../config/config';
 
 puppeteer.use(StealthPlugin());
 
+// 定义要移除的元素选择器常量
+const ELEMENTS_TO_REMOVE_SELECTOR = `
+  script, style, 
+  nav, header, footer, 
+  [class*="menu"], [class*="nav"], 
+  [class*="header"], [class*="footer"], 
+  [class*="foot"], [class*="sidebar"], 
+  [class*="ad"], [class*="banner"], [class*="share"],
+  [class*="follow"], [class*="comment"],
+  [id*="menu"], [id*="nav"],
+  [id*="header"], [id*="footer"],
+  [id*="foot"], [id*="sidebar"],
+  [id*="ad"], [id*="banner"], [id*="share"],
+  [id*="follow"], [id*="comment"]
+`;
+
 interface ScrapeOptions {
   getText?: boolean;
   getHtml?: boolean;
@@ -194,6 +210,7 @@ async function scrapePage(url: string, options: ScrapeOptions = {}): Promise<Scr
 
         // 在所有内容区域中查找图片
         const allImages = new Set<ImageInfo>();
+        const uniqueUrls = new Set<string>(); // 添加URL去重集合
         
         for (const selector of structure.contents) {
           const element = document.querySelector(selector);
@@ -217,11 +234,17 @@ async function scrapePage(url: string, options: ScrapeOptions = {}): Promise<Scr
               id.includes('banner');
 
             if (!isDecorative && width > 100 && height > 100) {
-              allImages.add({
-                src: img.src || img.getAttribute('data-src') || '',
-                alt: img.alt || '',
-                title: img.title || '',
-              });
+              const imgSrc = img.src || img.getAttribute('data-src') || '';
+              
+              // 检查URL是否已存在，如果不存在则添加
+              if (imgSrc && !uniqueUrls.has(imgSrc)) {
+                uniqueUrls.add(imgSrc);
+                allImages.add({
+                  src: imgSrc,
+                  alt: img.alt || '',
+                  title: img.title || '',
+                });
+              }
             }
           });
         }
@@ -232,7 +255,7 @@ async function scrapePage(url: string, options: ScrapeOptions = {}): Promise<Scr
 
     // 获取文本内容
     if (getText) {
-      result.text = await page.evaluate((structure) => {
+      result.text = await page.evaluate((structure, elementsToRemoveSelector) => {
         if (!structure.contents || structure.contents.length === 0) {
           return document.body.innerText;
         }
@@ -245,25 +268,14 @@ async function scrapePage(url: string, options: ScrapeOptions = {}): Promise<Scr
 
             // 移除不需要的元素
             const clone = element.cloneNode(true) as HTMLElement;
-            const elementsToRemove = clone.querySelectorAll(`
-              script, style, 
-              nav, header, footer, 
-              [class*="menu"], [class*="nav"], 
-              [class*="header"], [class*="footer"], 
-              [class*="foot"], [class*="sidebar"], 
-              [class*="ad"], [class*="banner"], [class*="share"],
-              [id*="menu"], [id*="nav"],
-              [id*="header"], [id*="footer"],
-              [id*="foot"], [id*="sidebar"],
-              [id*="ad"], [id*="banner"], [id*="share"]
-            `);
+            const elementsToRemove = clone.querySelectorAll(elementsToRemoveSelector);
             elementsToRemove.forEach(el => el.remove());
 
             return clone.innerText.trim();
           })
           .filter(Boolean)
           .join('\n\n');
-      }, pageStructure);
+      }, pageStructure, ELEMENTS_TO_REMOVE_SELECTOR);
       // 清理多余的\t和换行，只保留必要的换行
       if (result.text) {
         result.text = result.text.replace(/\t+/g, '')
@@ -275,7 +287,7 @@ async function scrapePage(url: string, options: ScrapeOptions = {}): Promise<Scr
 
     // 获取原始HTML
     if (getHtml) {
-      result.html = await page.evaluate((structure) => {
+      result.html = await page.evaluate((structure, elementsToRemoveSelector) => {
         if (!structure.contents || structure.contents.length === 0) {
           return document.body.innerHTML;
         }
@@ -288,25 +300,14 @@ async function scrapePage(url: string, options: ScrapeOptions = {}): Promise<Scr
 
             // 移除不需要的元素
             const clone = element.cloneNode(true) as HTMLElement;
-            const elementsToRemove = clone.querySelectorAll(`
-              script, style, 
-              nav, header, footer, 
-              [class*="menu"], [class*="nav"], 
-              [class*="header"], [class*="footer"], 
-              [class*="foot"], [class*="sidebar"], 
-              [class*="ad"], [class*="banner"], [class*="share"],
-              [id*="menu"], [id*="nav"],
-              [id*="header"], [id*="footer"],
-              [id*="foot"], [id*="sidebar"],
-              [id*="ad"], [id*="banner"], [id*="share"]
-            `);
+            const elementsToRemove = clone.querySelectorAll(elementsToRemoveSelector);
             elementsToRemove.forEach(el => el.remove());
 
             return clone.innerHTML;
           })
           .filter(Boolean)
           .join('\n');
-      }, pageStructure);
+      }, pageStructure, ELEMENTS_TO_REMOVE_SELECTOR);
     }
 
     // 检测菜单
@@ -436,4 +437,4 @@ async function scrapePage(url: string, options: ScrapeOptions = {}): Promise<Scr
 const scrapeImages = (url: string): Promise<ScrapeResult> => scrapePage(url, { getImages: true });
 
 export { scrapePage, scrapeImages };
-export type { ScrapeOptions, ScrapeResult, ImageInfo, MenuItem }; 
+export type { ScrapeOptions, ScrapeResult, ImageInfo, MenuItem };
