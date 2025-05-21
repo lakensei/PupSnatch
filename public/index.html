@@ -14,7 +14,7 @@
             padding: 0;
             background: #f4f7fa;
             color: #2d3a4a;
-            min-height: 100vh;
+            height: 100vh;
         }
         .header {
             background: linear-gradient(90deg, #4f6d7a 0%, #c0d6df 100%);
@@ -32,8 +32,8 @@
             display: flex;
             flex-direction: row;
             gap: 32px;
-            max-width: 1100px;
-            margin: 18px auto 0 auto;
+            width: 1200px;
+            margin: 20px auto;
             padding: 0 8px;
         }
         .left-panel {
@@ -49,8 +49,8 @@
             border-radius: 10px;
             padding: 18px 14px;
             box-sizing: border-box;
-            width: 750px;
-            height: 600px;
+            width: 848px;
+            height: calc(100vh - 100px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -65,7 +65,7 @@
             font-weight: 500;
             color: #3a4a5d;
         }
-        input[type="url"] {
+        #url {
             width: 260px;
             padding: 10px 12px;
             border: 1px solid #b0bec5;
@@ -75,7 +75,7 @@
             color: #2d3a4a;
             transition: border 0.2s;
         }
-        input[type="url"]:focus {
+        #url:focus {
             border: 1.5px solid #4f6d7a;
             outline: none;
         }
@@ -148,7 +148,7 @@
             <form id="scrapeForm">
                 <div class="form-group">
                     <label for="url">目标URL:</label>
-                    <input type="url" id="url" name="url" required placeholder="https://example.com">
+                    <textarea rows="4" cols="50"  type="url" id="url" name="url" required placeholder="https://example.com" ></textarea>
                 </div>
                 <div class="checkbox-group">
                     <label>
@@ -200,7 +200,7 @@
             loading.style.display = 'block';
             if (jsonEditor) jsonEditor.set({});
             try {
-                const response = await fetch('/api/scrape-page', {
+                const response = await fetch('./api/scrape-page', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ url, options })
